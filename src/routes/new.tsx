@@ -87,12 +87,12 @@ function NewRequest() {
           <h2 className="mb-1 text-sm font-medium">A few quick checks</h2>
           <p className="mb-4 text-sm text-muted-foreground">These determine routing. Best guess is fine.</p>
           <div className="divide-y rounded-xl border bg-card">
-            {[
+            {([
               ["newData", "Does it involve a new third-party data source?"],
               ["pii", "Will it handle PHI or PII?"],
               ["externalAI", "Will data leave Deerfield's environment or be sent to an external AI model?"],
               ["portco", "Will the tool be deployed to or used by a portfolio company?"],
-            ].map(([k, label]) => (
+            ] as [string, string][]).map(([k, label]) => (
               <div key={k} className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="text-sm">
                   {label}
