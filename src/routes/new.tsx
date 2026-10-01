@@ -42,11 +42,11 @@ function NewRequest() {
     Object.entries(q).forEach(([k, v]) => v === null && (errs[k] = "Choose one"));
     setErrors(errs);
     if (!parsed.success || Object.keys(errs).length) return;
-    const input = { ...parsed.data, term, newData: !!q.newData, pii: !!q.pii, externalAI: !!q.externalAI, portco: !!q.portco };
+    const input = { ...parsed.data, term, newData: !!q["newData"], pii: !!q["pii"], externalAI: !!q["externalAI"], portco: !!q["portco"] };
     const reasons = route(input);
     const reviews = uniqueReviews(reasons);
     const fast = reviews.length === 1 && reviews[0] === "Operations";
-    const req: VendorRequest = { ...input, id: crypto.randomUUID(), reviews, owner: reviews[fast ? 0 : reviews.length > 1 && reviews[0] === "Operations" ? 1 : 0], status: fast ? "Fast path" : "In review", daysInStage: 0 };
+    const req: VendorRequest = { ...input, id: crypto.randomUUID(), reviews, owner: reviews[fast ? 0 : reviews.length > 1 && reviews[0] === "Operations" ? 1 : 0] ?? "Operations", status: fast ? "Fast path" : "In review", daysInStage: 0 };
     add(req);
     setResult({ vendor: input.vendor, reasons });
     window.scrollTo({ top: 0 });
@@ -113,7 +113,7 @@ function NewRequest() {
   );
 }
 
-function Field({ label, error, children }: { label: string; error?: string; children: ReactNode }) {
+function Field({ label, error, children }: { label: string; error?: string | undefined; children: ReactNode }) {
   return (
     <label className="block">
       <span className="mb-1.5 block text-sm font-medium">{label}</span>
