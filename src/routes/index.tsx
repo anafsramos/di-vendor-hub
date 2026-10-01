@@ -1,24 +1,84 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { fmt, useStore, type VendorRequest } from "@/lib/store";
+import { PageHeader, Pill, Stat } from "@/components/ui-bits";
+import { cn } from "@/lib/utils";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
 export const Route = createFileRoute("/")({
-  component: Index,
+  head: () => ({
+    meta: [
+      { title: "Active Requests — DI Vendor Hub" },
+      { name: "description", content: "Vendor requests moving through review at Deerfield Intelligence." },
+      { property: "og:title", content: "Active Requests — DI Vendor Hub" },
+      { property: "og:description", content: "Vendor requests moving through review at Deerfield Intelligence." },
+    ],
+  }),
+  component: Requests,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
-function Index() {
+const AGING = 7;
+
+function statusTone(r: VendorRequest) {
+  if (r.status === "Blocked") return "danger" as const;
+  if (r.status === "Fast path") return "success" as const;
+  if (r.daysInStage >= AGING) return "warn" as const;
+  return "neutral" as const;
+}
+
+function Requests() {
+  const { requests } = useStore();
+  const sorted = [...requests].sort((a, b) => {
+    const s = (r: VendorRequest) => (r.status === "Blocked" ? 2 : r.daysInStage >= AGING ? 1 : 0);
+    return s(b) - s(a) || b.daysInStage - a.daysInStage;
+  });
+  const blocked = requests.filter((r) => r.status === "Blocked").length;
+  const aging = requests.filter((r) => r.status !== "Blocked" && r.daysInStage >= AGING).length;
+
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
+    <>
+      <PageHeader
+        title="Active requests"
+        sub="Everything currently moving through review. Operations coordinates — you don't need to chase anyone."
+        right={<Link to="/new" className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90">New request</Link>}
       />
-    </div>
+      <div className="mb-8 grid grid-cols-2 gap-4 md:grid-cols-4">
+        <Stat label="In flight" value={requests.length} />
+        <Stat label="Blocked" value={blocked} tone={blocked ? "danger" : undefined} />
+        <Stat label={`Aging ${AGING}d+`} value={aging} tone={aging ? "warn" : undefined} />
+        <Stat label="Pipeline spend" value={fmt(requests.reduce((s, r) => s + r.cost, 0))} />
+      </div>
+
+      <div className="overflow-x-auto rounded-xl border bg-card">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b text-left text-xs uppercase tracking-wider text-muted-foreground">
+              {["Vendor", "Requester", "Cost", "Reviews", "Owner", "Status", "Days in stage"].map((h) => (
+                <th key={h} className="px-5 py-3 font-medium">{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {sorted.map((r) => {
+              const flagged = r.status === "Blocked" || r.daysInStage >= AGING;
+              return (
+                <tr key={r.id} className={cn("border-b last:border-0", r.status === "Blocked" && "bg-destructive/[0.03]")}>
+                  <td className={cn("px-5 py-4 border-l-2", r.status === "Blocked" ? "border-l-destructive" : r.daysInStage >= AGING ? "border-l-warning" : "border-l-transparent")}>
+                    <div className="font-medium">{r.vendor}</div>
+                    <div className="mt-0.5 max-w-xs truncate text-xs text-muted-foreground">{r.note ?? r.purpose}</div>
+                  </td>
+                  <td className="px-5 py-4">{r.requester}</td>
+                  <td className="px-5 py-4 tabular">{fmt(r.cost)}</td>
+                  <td className="px-5 py-4">
+                    <div className="flex flex-wrap gap-1">{r.reviews.map((v) => <Pill key={v}>{v}</Pill>)}</div>
+                  </td>
+                  <td className="px-5 py-4">{r.owner}</td>
+                  <td className="px-5 py-4"><Pill tone={statusTone(r)}>{r.status === "In review" && r.daysInStage >= AGING ? "Aging" : r.status}</Pill></td>
+                  <td className={cn("px-5 py-4 tabular font-mono", flagged && "font-semibold", r.status === "Blocked" ? "text-destructive" : r.daysInStage >= AGING && "text-warning")}>{r.daysInStage}d</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </>
   );
 }

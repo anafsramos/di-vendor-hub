@@ -12,6 +12,7 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { StoreProvider } from "../lib/store";
 
 function NotFoundComponent() {
   return (
@@ -78,20 +79,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "DI Vendor Hub" },
+      { name: "description", content: "Vendor intake, review, and renewals for Deerfield Intelligence." },
+      { property: "og:title", content: "DI Vendor Hub" },
+      { property: "og:description", content: "Vendor intake, review, and renewals for Deerfield Intelligence." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:site", content: "@Lovable" },
     ],
     links: [
-      {
-        rel: "stylesheet",
-        href: appCss,
-      },
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;600&display=swap" },
+      { rel: "stylesheet", href: appCss },
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
     ],
   }),
@@ -115,13 +114,31 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
+const navCls = "rounded-md px-3 py-1.5 text-sm text-muted-foreground transition hover:text-foreground";
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
+      <StoreProvider>
+        <header className="sticky top-0 z-10 border-b bg-background/85 backdrop-blur">
+          <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
+            <Link to="/" className="flex items-center gap-2 text-sm font-semibold tracking-tight">
+              <span className="grid h-6 w-6 place-items-center rounded-md bg-primary font-mono text-[10px] text-primary-foreground">DI</span>
+              Vendor Hub
+            </Link>
+            <nav className="flex gap-1">
+              <Link to="/" className={navCls} activeOptions={{ exact: true }} activeProps={{ className: "bg-secondary !text-foreground font-medium" }}>Requests</Link>
+              <Link to="/new" className={navCls} activeProps={{ className: "bg-secondary !text-foreground font-medium" }}>New Request</Link>
+              <Link to="/vendors" className={navCls} activeProps={{ className: "bg-secondary !text-foreground font-medium" }}>Vendors</Link>
+            </nav>
+          </div>
+        </header>
+        <main className="mx-auto max-w-6xl px-6 py-14">
+          <Outlet />
+        </main>
+      </StoreProvider>
     </QueryClientProvider>
   );
 }
