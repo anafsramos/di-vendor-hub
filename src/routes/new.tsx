@@ -61,17 +61,17 @@ function NewRequest() {
       <PageHeader title="New vendor request" sub="Tell us what you need once. We'll figure out who needs to review it and handle the rest." />
       <form onSubmit={submit} className="space-y-10">
         <section className="space-y-5">
-          <Field label="Vendor / tool name" error={errors.vendor}>
+          <Field label="Vendor / tool name" error={errors["vendor"]}>
             <input className={field} value={f.vendor} onChange={(e) => setF({ ...f, vendor: e.target.value })} placeholder="e.g. Hebbia" maxLength={100} />
           </Field>
-          <Field label="What do you want to use it for?" error={errors.purpose}>
+          <Field label="What do you want to use it for?" error={errors["purpose"]}>
             <textarea className={cn(field, "min-h-24 resize-y")} value={f.purpose} onChange={(e) => setF({ ...f, purpose: e.target.value })} placeholder="A sentence or two is plenty." maxLength={500} />
           </Field>
           <div className="grid gap-5 sm:grid-cols-2">
-            <Field label="Requester" error={errors.requester}>
+            <Field label="Requester" error={errors["requester"]}>
               <input className={field} value={f.requester} onChange={(e) => setF({ ...f, requester: e.target.value })} placeholder="Your name" maxLength={100} />
             </Field>
-            <Field label="Estimated annual cost" error={errors.cost}>
+            <Field label="Estimated annual cost" error={errors["cost"]}>
               <div className="relative">
                 <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">$</span>
                 <input className={cn(field, "pl-7 tabular")} inputMode="numeric" value={f.cost} onChange={(e) => setF({ ...f, cost: e.target.value })} placeholder="12,000" />
