@@ -30,7 +30,7 @@ export function PageHeader({ title, sub, right }: { title: string; sub: string; 
   );
 }
 
-export function Stat({ label, value, tone }: { label: string; value: ReactNode; tone?: "danger" | "warn" }) {
+export function Stat({ label, value, tone }: { label: string; value: ReactNode; tone?: "danger" | "warn" | undefined }) {
   return (
     <div className="rounded-xl border bg-card px-5 py-4">
       <div className="text-xs uppercase tracking-wider text-muted-foreground">{label}</div>
