@@ -11,9 +11,10 @@ const schema = z.object({
 });
 
 type YN = boolean | null;
-type QKey = "newData" | "pii" | "externalAI" | "portco";
+type QKey = "inBudget" | "newData" | "pii" | "externalAI" | "portco";
 
 export const QUESTIONS: [QKey, string][] = [
+  ["inBudget", "Is it within an already-approved DI budget?"],
   ["newData", "Does it involve a new third-party data source?"],
   ["pii", "Will it handle PHI or PII?"],
   ["externalAI", "Will data leave Deerfield's environment or be sent to an external AI model?"],
@@ -29,6 +30,7 @@ export function RequestForm({ initial, submitLabel, onSubmit, footer }: { initia
   });
   const [term, setTerm] = useState<Term>(initial?.term ?? "annual");
   const [q, setQ] = useState<Record<QKey, YN>>({
+    inBudget: initial?.inBudget ?? null,
     newData: initial?.newData ?? null,
     pii: initial?.pii ?? null,
     externalAI: initial?.externalAI ?? null,
@@ -44,7 +46,7 @@ export function RequestForm({ initial, submitLabel, onSubmit, footer }: { initia
     Object.entries(q).forEach(([k, v]) => v === null && (errs[k] = "Choose one"));
     setErrors(errs);
     if (!parsed.success || Object.keys(errs).length) return;
-    onSubmit({ ...parsed.data, term, newData: !!q.newData, pii: !!q.pii, externalAI: !!q.externalAI, portco: !!q.portco });
+    onSubmit({ ...parsed.data, term, inBudget: !!q.inBudget, newData: !!q.newData, pii: !!q.pii, externalAI: !!q.externalAI, portco: !!q.portco });
   };
 
   const field = "w-full rounded-lg border bg-card px-3.5 py-2.5 text-sm outline-none transition focus:border-ring focus:ring-2 focus:ring-ring/15";
