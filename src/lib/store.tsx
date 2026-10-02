@@ -9,7 +9,6 @@ export interface RequestInput {
   requester: string;
   cost: number;
   term: Term;
-  inBudget: boolean;
   newData: boolean;
   pii: boolean;
   externalAI: boolean;
@@ -37,7 +36,6 @@ export const RULES_NOTE = "Thresholds and rules are illustrative. Actual product
 
 export const GUARDRAILS = [
   `Annual spend under ${"$"}${AUTO_APPROVE_LIMIT.toLocaleString("en-US")}`,
-  "Within an already-approved DI budget",
   "Monthly or annual contract (not multi-year)",
   "No new third-party data source",
   "No PHI or PII",
@@ -49,7 +47,6 @@ export function route(input: RequestInput): Reason[] {
   const r: Reason[] = [];
   if (input.cost >= MATERIAL_SPEND) r.push({ review: "Finance", why: `Annual cost of ${fmt(input.cost)} exceeds the ${fmt(MATERIAL_SPEND)} material-spend threshold.` });
   else if (input.cost >= AUTO_APPROVE_LIMIT) r.push({ review: "Finance", why: `Annual cost of ${fmt(input.cost)} is above the ${fmt(AUTO_APPROVE_LIMIT)} auto-approval limit.` });
-  if (!input.inBudget) r.push({ review: "Finance", why: "Not within an already-approved DI budget." });
   if (input.term === "multi-year") {
     r.push({ review: "Finance", why: "Multi-year commitment." });
     r.push({ review: "Legal", why: "Multi-year commitment requires contract review." });
@@ -71,8 +68,8 @@ export function uniqueReviews(reasons: Reason[]): Review[] {
 
 export const fmt = (n: number) => "$" + n.toLocaleString("en-US", { maximumFractionDigits: 0 });
 
-function seed(id: string, input: Omit<RequestInput, "inBudget"> & { inBudget?: boolean }, extra: { owner?: Review; status?: VendorRequest["status"]; daysInStage: number; note?: string }): VendorRequest {
-  const full: RequestInput = { inBudget: true, ...input };
+function seed(id: string, input: RequestInput, extra: { owner?: Review; status?: VendorRequest["status"]; daysInStage: number; note?: string }): VendorRequest {
+  const full: RequestInput = input;
   const { reviews, owner, auto } = routing(full);
   const { owner: o, status, ...rest } = extra;
   return { ...full, id, reviews, owner: auto ? null : o ?? owner, status: auto ? "Auto-approved" : status ?? "In review", ...rest };
