@@ -18,6 +18,15 @@ export const Route = createFileRoute("/")({
 
 const AGING = 7;
 
+function MiniStat({ label, value, tone }: { label: string; value: React.ReactNode; tone?: "danger" | "warn" | undefined }) {
+  return (
+    <div className="rounded-lg border bg-card px-3.5 py-2">
+      <div className="text-[11px] uppercase tracking-wider text-muted-foreground">{label}</div>
+      <div className={cn("text-lg font-semibold tabular", tone === "danger" && "text-destructive", tone === "warn" && "text-warning")}>{value}</div>
+    </div>
+  );
+}
+
 function statusTone(r: VendorRequest) {
   if (r.status === "Blocked") return "danger" as const;
   if (r.status === "Auto-approved") return "success" as const;
