@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { fmt, useStore, type VendorRequest } from "@/lib/store";
 import { Pill } from "@/components/ui-bits";
@@ -18,7 +19,7 @@ export const Route = createFileRoute("/")({
 
 const AGING = 7;
 
-function MiniStat({ label, value, tone }: { label: string; value: React.ReactNode; tone?: "danger" | "warn" | undefined }) {
+function MiniStat({ label, value, tone }: { label: string; value: ReactNode; tone?: "danger" | "warn" | undefined }) {
   return (
     <div className="rounded-lg border bg-card px-3.5 py-2">
       <div className="text-[11px] uppercase tracking-wider text-muted-foreground">{label}</div>
@@ -54,10 +55,10 @@ function Requests() {
         <Link to="/new" className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90">New request</Link>
       </div>
       <div className="mb-5 grid grid-cols-2 gap-3 md:grid-cols-4">
-        <Stat label="In flight" value={requests.filter((r) => r.status !== "Auto-approved").length} />
-        <Stat label="Blocked" value={blocked} tone={blocked ? "danger" : undefined} />
-        <Stat label={`Aging ${AGING}d+`} value={aging} tone={aging ? "warn" : undefined} />
-        <Stat label="Tracked spend" value={fmt(requests.reduce((s, r) => s + r.cost, 0))} />
+        <MiniStat label="In flight" value={requests.filter((r) => r.status !== "Auto-approved").length} />
+        <MiniStat label="Blocked" value={blocked} tone={blocked ? "danger" : undefined} />
+        <MiniStat label={`Aging ${AGING}d+`} value={aging} tone={aging ? "warn" : undefined} />
+        <MiniStat label="Tracked spend" value={fmt(requests.reduce((s, r) => s + r.cost, 0))} />
       </div>
 
       <div className="rounded-xl border bg-card">
