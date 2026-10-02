@@ -12,6 +12,8 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as NewRouteImport } from './routes/new'
 import { Route as VendorsRouteImport } from './routes/vendors'
+import { Route as RequestsIdIndexRouteImport } from './routes/requests.$id.index'
+import { Route as RequestsIdEditRouteImport } from './routes/requests.$id.edit'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -28,35 +30,59 @@ const VendorsRoute = VendorsRouteImport.update({
   path: '/vendors',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RequestsIdIndexRoute = RequestsIdIndexRouteImport.update({
+  id: '/requests/$id/',
+  path: '/requests/$id/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RequestsIdEditRoute = RequestsIdEditRouteImport.update({
+  id: '/requests/$id/edit',
+  path: '/requests/$id/edit',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/new': typeof NewRoute
   '/vendors': typeof VendorsRoute
+  '/requests/$id/edit': typeof RequestsIdEditRoute
+  '/requests/$id/': typeof RequestsIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/new': typeof NewRoute
   '/vendors': typeof VendorsRoute
+  '/requests/$id/edit': typeof RequestsIdEditRoute
+  '/requests/$id': typeof RequestsIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/new': typeof NewRoute
   '/vendors': typeof VendorsRoute
+  '/requests/$id/edit': typeof RequestsIdEditRoute
+  '/requests/$id/': typeof RequestsIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/new' | '/vendors'
+  fullPaths: '/' | '/new' | '/vendors' | '/requests/$id/edit' | '/requests/$id/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/new' | '/vendors'
-  id: '__root__' | '/' | '/new' | '/vendors'
+  to: '/' | '/new' | '/vendors' | '/requests/$id/edit' | '/requests/$id'
+  id:
+    | '__root__'
+    | '/'
+    | '/new'
+    | '/vendors'
+    | '/requests/$id/edit'
+    | '/requests/$id/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   NewRoute: typeof NewRoute
   VendorsRoute: typeof VendorsRoute
+  RequestsIdEditRoute: typeof RequestsIdEditRoute
+  RequestsIdIndexRoute: typeof RequestsIdIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -82,6 +108,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof VendorsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/requests/$id/': {
+      id: '/requests/$id/'
+      path: '/requests/$id'
+      fullPath: '/requests/$id/'
+      preLoaderRoute: typeof RequestsIdIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/requests/$id/edit': {
+      id: '/requests/$id/edit'
+      path: '/requests/$id/edit'
+      fullPath: '/requests/$id/edit'
+      preLoaderRoute: typeof RequestsIdEditRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -89,6 +129,8 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   NewRoute: NewRoute,
   VendorsRoute: VendorsRoute,
+  RequestsIdEditRoute: RequestsIdEditRoute,
+  RequestsIdIndexRoute: RequestsIdIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
