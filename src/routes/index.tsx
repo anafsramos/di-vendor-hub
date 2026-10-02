@@ -70,7 +70,7 @@ function Requests() {
                   </td>
                   <td className="px-4 py-3.5 text-right tabular">{fmt(r.cost)}</td>
                   <td className="px-4 py-3.5">
-                    <div className="flex flex-wrap gap-1">{r.reviews.map((v) => <Pill key={v}>{v}</Pill>)}</div>
+                    <div className="flex flex-wrap gap-1">{r.reviews.length ? r.reviews.map((v) => <Pill key={v}>{v}</Pill>) : <span className="text-xs text-muted-foreground">None needed</span>}</div>
                   </td>
                   <td className="px-4 py-3.5">{r.owner ?? <span className="text-muted-foreground">—</span>}</td>
                   <td className="px-4 py-3.5"><Pill tone={statusTone(r)}>{r.status === "In review" && r.daysInStage >= AGING ? "Aging" : r.status}</Pill></td>
