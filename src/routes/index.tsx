@@ -51,7 +51,7 @@ function Requests() {
 
       <div className="min-h-0 flex-1 overflow-auto rounded-xl border bg-card">
         <table className="w-full text-sm">
-          <thead>
+          <thead className="sticky top-0 z-10 bg-card">
             <tr className="border-b text-left text-xs uppercase tracking-wider text-muted-foreground">
               {["Vendor", "Cost", "Reviews", "Owner", "Status", "Days"].map((h) => (
                 <th key={h} className={cn("px-4 py-3 font-medium", (h === "Cost" || h === "Days") && "text-right")}>{h}</th>
@@ -80,8 +80,8 @@ function Requests() {
             })}
           </tbody>
         </table>
+        <RulesNote className="px-6 pb-6 pt-1 text-xs text-muted-foreground" />
       </div>
-      <RulesNote />
-    </>
+    </div>
   );
 }
