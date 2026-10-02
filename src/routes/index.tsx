@@ -1,6 +1,7 @@
+import type { ReactNode } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { fmt, useStore, type VendorRequest } from "@/lib/store";
-import { PageHeader, Pill, Stat } from "@/components/ui-bits";
+import { Pill } from "@/components/ui-bits";
 import { RulesNote } from "@/components/reasons-list";
 import { cn } from "@/lib/utils";
 
@@ -17,6 +18,15 @@ export const Route = createFileRoute("/")({
 });
 
 const AGING = 7;
+
+function MiniStat({ label, value, tone }: { label: string; value: ReactNode; tone?: "danger" | "warn" | undefined }) {
+  return (
+    <div className="rounded-lg border bg-card px-3.5 py-2">
+      <div className="text-[11px] uppercase tracking-wider text-muted-foreground">{label}</div>
+      <div className={cn("text-lg font-semibold tabular", tone === "danger" && "text-destructive", tone === "warn" && "text-warning")}>{value}</div>
+    </div>
+  );
+}
 
 function statusTone(r: VendorRequest) {
   if (r.status === "Blocked") return "danger" as const;
@@ -36,22 +46,24 @@ function Requests() {
   const aging = requests.filter((r) => r.status !== "Blocked" && r.daysInStage >= AGING).length;
 
   return (
-    <div className="flex h-[calc(100vh-10.5rem)] flex-col">
-      <PageHeader
-        title="Active requests"
-        sub="Everything currently moving through review. Operations coordinates — you don't need to chase anyone."
-        right={<Link to="/new" className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90">New request</Link>}
-      />
-      <div className="mb-8 grid shrink-0 grid-cols-2 gap-4 md:grid-cols-4">
-        <Stat label="In flight" value={requests.filter((r) => r.status !== "Auto-approved").length} />
-        <Stat label="Blocked" value={blocked} tone={blocked ? "danger" : undefined} />
-        <Stat label={`Aging ${AGING}d+`} value={aging} tone={aging ? "warn" : undefined} />
-        <Stat label="Tracked spend" value={fmt(requests.reduce((s, r) => s + r.cost, 0))} />
+    <div>
+      <div className="mb-4 flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">Active requests</h1>
+          <p className="mt-1 max-w-xl text-sm text-muted-foreground">Everything currently moving through review. Operations coordinates — you don't need to chase anyone.</p>
+        </div>
+        <Link to="/new" className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90">New request</Link>
+      </div>
+      <div className="mb-5 grid grid-cols-2 gap-3 md:grid-cols-4">
+        <MiniStat label="In flight" value={requests.filter((r) => r.status !== "Auto-approved").length} />
+        <MiniStat label="Blocked" value={blocked} tone={blocked ? "danger" : undefined} />
+        <MiniStat label={`Aging ${AGING}d+`} value={aging} tone={aging ? "warn" : undefined} />
+        <MiniStat label="Tracked spend" value={fmt(requests.reduce((s, r) => s + r.cost, 0))} />
       </div>
 
-      <div className="min-h-0 flex-1 overflow-auto rounded-xl border bg-card">
+      <div className="rounded-xl border bg-card">
         <table className="w-full text-sm">
-          <thead className="sticky top-0 z-10 bg-card">
+          <thead className="sticky top-14 z-10 bg-card">
             <tr className="border-b text-left text-xs uppercase tracking-wider text-muted-foreground">
               {["Vendor", "Cost", "Reviews", "Owner", "Status", "Days"].map((h) => (
                 <th key={h} className={cn("px-4 py-3 font-medium", (h === "Cost" || h === "Days") && "text-right")}>{h}</th>
