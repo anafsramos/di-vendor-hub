@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { fmt, routing, useStore, type VendorRequest } from "@/lib/store";
 import { Pill } from "@/components/ui-bits";
-import { ReasonsList } from "@/components/reasons-list";
+import { AutoApprovedPanel, ReasonsList, RulesNote } from "@/components/reasons-list";
 import { QUESTIONS } from "@/components/request-form";
 
 export const Route = createFileRoute("/requests/$id/")({
@@ -20,7 +20,7 @@ const TERMS = { monthly: "Monthly", annual: "Annual", "multi-year": "Multi-year"
 
 function tone(r: VendorRequest) {
   if (r.status === "Blocked") return "danger" as const;
-  if (r.status === "Fast path" || r.status === "Approved") return "success" as const;
+  if (r.status === "Auto-approved" || r.status === "Approved") return "success" as const;
   if (r.daysInStage >= 7) return "warn" as const;
   return "neutral" as const;
 }
@@ -30,7 +30,7 @@ function Detail() {
   const { requests, ready } = useStore();
   const r = requests.find((x) => x.id === id);
   if (!r) return ready ? <p className="text-muted-foreground">Request not found. <Link to="/" className="underline">Back to requests</Link></p> : null;
-  const { reasons } = routing(r);
+  const { reasons, auto } = routing(r);
 
   return (
     <div className="mx-auto max-w-3xl">
@@ -45,12 +45,13 @@ function Detail() {
 
       <div className="mb-10 grid grid-cols-3 gap-4">
         <Box label="Status"><Pill tone={tone(r)}>{r.status}</Pill>{r.note && <div className="mt-1.5 text-xs text-muted-foreground">{r.note}</div>}</Box>
-        <Box label="Current owner">{r.owner}</Box>
-        <Box label="Days in stage"><span className="font-mono tabular">{r.daysInStage}d</span></Box>
+        <Box label="Current owner">{r.owner ?? <span className="text-muted-foreground">None</span>}</Box>
+        <Box label="Days in stage"><span className="font-mono tabular">{auto ? "—" : `${r.daysInStage}d`}</span></Box>
       </div>
 
-      <h2 className="mb-3 text-sm font-medium">Reviews required</h2>
-      <ReasonsList reasons={reasons} />
+      <h2 className="mb-3 text-sm font-medium">{auto ? "Approval" : "Reviews required"}</h2>
+      {auto ? <AutoApprovedPanel /> : <ReasonsList reasons={reasons} />}
+      <RulesNote />
 
       <h2 className="mt-10 mb-3 text-sm font-medium">Original request</h2>
       <dl className="divide-y rounded-xl border bg-card text-sm">

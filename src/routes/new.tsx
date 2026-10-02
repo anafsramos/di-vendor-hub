@@ -1,9 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { createRequest, routing, useStore, fmt, type VendorRequest } from "@/lib/store";
+import { createRequest, routing, useStore, type VendorRequest } from "@/lib/store";
 import { PageHeader, Pill } from "@/components/ui-bits";
 import { RequestForm } from "@/components/request-form";
-import { ReasonsList } from "@/components/reasons-list";
+import { AutoApprovedPanel, ReasonsList, RulesNote } from "@/components/reasons-list";
 
 export const Route = createFileRoute("/new")({
   head: () => ({
@@ -38,16 +38,16 @@ function NewRequest() {
 }
 
 function Confirmation({ req, onReset }: { req: VendorRequest; onReset: () => void }) {
-  const { reasons, reviews, fast } = routing(req);
+  const { reasons, reviews, auto } = routing(req);
   return (
     <div className="mx-auto max-w-2xl animate-in fade-in slide-in-from-bottom-2 duration-500">
-      <Pill tone={fast ? "success" : "accent"}>{fast ? "Fast path" : "Submitted"}</Pill>
-      <h1 className="mt-4 text-3xl font-semibold tracking-tight">{req.vendor} is on its way.</h1>
+      <Pill tone={auto ? "success" : "accent"}>{auto ? "Auto-approved" : "Submitted"}</Pill>
+      <h1 className="mt-4 text-3xl font-semibold tracking-tight">{auto ? `${req.vendor} is approved.` : `${req.vendor} is on its way.`}</h1>
       <p className="mt-2 text-muted-foreground">
-        {fast ? "Operations will handle this directly — no further reviews needed." : `Operations is coordinating ${reviews.length} review${reviews.length > 1 ? "s" : ""}. You don't need to do anything else.`}
+        {auto ? "It meets all auto-approval guardrails — no reviews or sign-off needed. It stays visible to Operations for spend tracking." : `Operations is coordinating ${reviews.length} review${reviews.length > 1 ? "s" : ""}. You don't need to do anything else.`}
       </p>
-      <div className="mt-10"><ReasonsList reasons={reasons} /></div>
-      <p className="mt-6 text-xs text-muted-foreground">Routing rules are illustrative (material spend ≥ {fmt(25000)}) and will be finalized with Finance, Compliance, and Legal.</p>
+      <div className="mt-10">{auto ? <AutoApprovedPanel /> : <ReasonsList reasons={reasons} />}</div>
+      <RulesNote />
       <div className="mt-8 flex flex-wrap gap-3">
         <Link to="/" className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90">View active requests</Link>
         <Link to="/requests/$id/edit" params={{ id: req.id }} className="rounded-lg border bg-card px-4 py-2 text-sm font-medium hover:bg-secondary">Edit request</Link>
