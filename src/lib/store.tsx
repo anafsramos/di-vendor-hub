@@ -65,22 +65,42 @@ const SEED: VendorRequest[] = [
   { id: "r6", vendor: "Crunchbase Pro", purpose: "Private company data for sourcing models", requester: "Marcus Lee", cost: 32000, term: "annual", newData: true, pii: false, externalAI: false, portco: false, reviews: ["Finance", "Compliance", "Legal"], owner: "Finance", status: "In review", daysInStage: 6 },
 ];
 
-const Ctx = createContext<{ requests: VendorRequest[]; add: (r: VendorRequest) => void } | null>(null);
-const KEY = "di-vendor-hub-requests";
+export function routing(input: RequestInput) {
+  const reasons = route(input);
+  const reviews = uniqueReviews(reasons);
+  const fast = reviews.length === 1 && reviews[0] === "Operations";
+  const owner: Review = reviews.find((r) => r !== "Operations") ?? "Operations";
+  return { reasons, reviews, owner, fast };
+}
+
+export function createRequest(input: RequestInput): VendorRequest {
+  const { reviews, owner, fast } = routing(input);
+  return { ...input, id: crypto.randomUUID(), reviews, owner, status: fast ? "Fast path" : "In review", daysInStage: 0 };
+}
+
+type Store = { requests: VendorRequest[]; ready: boolean; add: (r: VendorRequest) => void; update: (id: string, input: RequestInput) => void };
+const Ctx = createContext<Store | null>(null);
+const KEY = "di-vendor-hub-requests-v2";
 
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [requests, setRequests] = useState<VendorRequest[]>(SEED);
+  const [ready, setReady] = useState(false);
   useEffect(() => {
     const s = localStorage.getItem(KEY);
-    if (s) try { setRequests([...JSON.parse(s), ...SEED]); } catch { /* ignore */ }
+    if (s) try { setRequests(JSON.parse(s)); } catch { /* ignore */ }
+    setReady(true);
   }, []);
-  const add = (r: VendorRequest) => {
-    setRequests((prev) => [r, ...prev]);
-    const s = localStorage.getItem(KEY);
-    const saved = s ? JSON.parse(s) : [];
-    localStorage.setItem(KEY, JSON.stringify([r, ...saved]));
-  };
-  return <Ctx.Provider value={{ requests, add }}>{children}</Ctx.Provider>;
+  const save = (next: VendorRequest[]) => { localStorage.setItem(KEY, JSON.stringify(next)); return next; };
+  const add = (r: VendorRequest) => setRequests((prev) => save([r, ...prev]));
+  const update = (id: string, input: RequestInput) =>
+    setRequests((prev) => save(prev.map((r) => {
+      if (r.id !== id) return r;
+      const { reviews, owner, fast } = routing(input);
+      const changed = owner !== r.owner || reviews.join() !== r.reviews.join();
+      const status: VendorRequest["status"] = fast ? "Fast path" : r.status === "Blocked" || r.status === "Approved" ? r.status : "In review";
+      return { ...r, ...input, reviews, owner, status, daysInStage: changed ? 0 : r.daysInStage };
+    })));
+  return <Ctx.Provider value={{ requests, ready, add, update }}>{children}</Ctx.Provider>;
 }
 
 export function useStore() {

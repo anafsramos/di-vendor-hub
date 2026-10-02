@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { fmt, useStore, type VendorRequest } from "@/lib/store";
 import { PageHeader, Pill, Stat } from "@/components/ui-bits";
 import { cn } from "@/lib/utils";
@@ -26,6 +26,7 @@ function statusTone(r: VendorRequest) {
 
 function Requests() {
   const { requests } = useStore();
+  const navigate = useNavigate();
   const sorted = [...requests].sort((a, b) => {
     const s = (r: VendorRequest) => (r.status === "Blocked" ? 2 : r.daysInStage >= AGING ? 1 : 0);
     return s(b) - s(a) || b.daysInStage - a.daysInStage;
@@ -51,8 +52,8 @@ function Requests() {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b text-left text-xs uppercase tracking-wider text-muted-foreground">
-              {["Vendor", "Requester", "Cost", "Reviews", "Owner", "Status", "Days in stage"].map((h) => (
-                <th key={h} className="px-5 py-3 font-medium">{h}</th>
+              {["Vendor", "Cost", "Reviews", "Owner", "Status", "Days"].map((h) => (
+                <th key={h} className={cn("px-4 py-3 font-medium", (h === "Cost" || h === "Days") && "text-right")}>{h}</th>
               ))}
             </tr>
           </thead>
@@ -60,19 +61,18 @@ function Requests() {
             {sorted.map((r) => {
               const flagged = r.status === "Blocked" || r.daysInStage >= AGING;
               return (
-                <tr key={r.id} className={cn("border-b last:border-0", r.status === "Blocked" && "bg-destructive/[0.03]")}>
-                  <td className={cn("px-5 py-4 border-l-2", r.status === "Blocked" ? "border-l-destructive" : r.daysInStage >= AGING ? "border-l-warning" : "border-l-transparent")}>
-                    <div className="font-medium">{r.vendor}</div>
-                    <div className="mt-0.5 max-w-xs truncate text-xs text-muted-foreground">{r.note ?? r.purpose}</div>
+                <tr key={r.id} onClick={() => navigate({ to: "/requests/$id", params: { id: r.id } })} className={cn("cursor-pointer border-b transition last:border-0 hover:bg-secondary/60", r.status === "Blocked" && "bg-destructive/[0.03]")}>
+                  <td className={cn("px-4 py-3.5 border-l-2", r.status === "Blocked" ? "border-l-destructive" : r.daysInStage >= AGING ? "border-l-warning" : "border-l-transparent")}>
+                    <Link to="/requests/$id" params={{ id: r.id }} onClick={(e) => e.stopPropagation()} className="font-medium hover:underline">{r.vendor}</Link>
+                    <div className="mt-0.5 max-w-[16rem] truncate text-xs text-muted-foreground">{r.requester} · {r.note ?? r.purpose}</div>
                   </td>
-                  <td className="px-5 py-4">{r.requester}</td>
-                  <td className="px-5 py-4 tabular">{fmt(r.cost)}</td>
-                  <td className="px-5 py-4">
+                  <td className="px-4 py-3.5 text-right tabular">{fmt(r.cost)}</td>
+                  <td className="px-4 py-3.5">
                     <div className="flex flex-wrap gap-1">{r.reviews.map((v) => <Pill key={v}>{v}</Pill>)}</div>
                   </td>
-                  <td className="px-5 py-4">{r.owner}</td>
-                  <td className="px-5 py-4"><Pill tone={statusTone(r)}>{r.status === "In review" && r.daysInStage >= AGING ? "Aging" : r.status}</Pill></td>
-                  <td className={cn("px-5 py-4 tabular font-mono", flagged && "font-semibold", r.status === "Blocked" ? "text-destructive" : r.daysInStage >= AGING && "text-warning")}>{r.daysInStage}d</td>
+                  <td className="px-4 py-3.5">{r.owner}</td>
+                  <td className="px-4 py-3.5"><Pill tone={statusTone(r)}>{r.status === "In review" && r.daysInStage >= AGING ? "Aging" : r.status}</Pill></td>
+                  <td className={cn("px-4 py-3.5 text-right tabular font-mono", flagged && "font-semibold", r.status === "Blocked" ? "text-destructive" : r.daysInStage >= AGING && "text-warning")}>{r.daysInStage}d</td>
                 </tr>
               );
             })}

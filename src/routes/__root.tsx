@@ -126,7 +126,7 @@ function RootComponent() {
           <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
             <Link to="/" className="flex items-center gap-2 text-sm font-semibold tracking-tight">
               <span className="grid h-6 w-6 place-items-center rounded-md bg-primary font-mono text-[10px] text-primary-foreground">DI</span>
-              Vendor Hub
+              DI Vendor Hub
             </Link>
             <nav className="flex gap-1">
               <Link to="/" className={navCls} activeOptions={{ exact: true }} activeProps={{ className: "bg-secondary !text-foreground font-medium" }}>Requests</Link>
