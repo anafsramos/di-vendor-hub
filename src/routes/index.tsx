@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { fmt, useStore, type VendorRequest } from "@/lib/store";
-import { PageHeader, Pill, Stat } from "@/components/ui-bits";
+import { Pill } from "@/components/ui-bits";
 import { RulesNote } from "@/components/reasons-list";
 import { cn } from "@/lib/utils";
 
@@ -53,7 +53,7 @@ function Requests() {
 
       <div className="rounded-xl border bg-card">
         <table className="w-full text-sm">
-          <thead className="sticky top-0 z-10 bg-card">
+          <thead className="sticky top-14 z-10 bg-card">
             <tr className="border-b text-left text-xs uppercase tracking-wider text-muted-foreground">
               {["Vendor", "Cost", "Reviews", "Owner", "Status", "Days"].map((h) => (
                 <th key={h} className={cn("px-4 py-3 font-medium", (h === "Cost" || h === "Days") && "text-right")}>{h}</th>
